@@ -29,6 +29,7 @@ export default function App() {
   const [view, setView] = useState<"form" | "support">("form");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [supportSuccess, setSupportSuccess] = useState(false);
   const [supportError, setSupportError] = useState<string | null>(null);
 
@@ -94,6 +95,7 @@ export default function App() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     try {
       // 1. Save to local SQLite database
       const res = await fetch("/api/records", {
@@ -112,7 +114,11 @@ export default function App() {
         params.append("tipo_intervencao", intervention.type);
         
         // Coluna F: Clínica ou Processo
-        const classificationValue = intervention.classifications[0] || "Não preenchido";
+        let classificationValue = intervention.classifications[0] || "Não preenchido";
+        if (intervention.type === "Não houve intervenção") {
+          classificationValue = "Não houve intervenção";
+        }
+
         if (intervention.type === "Intervenção clínica") {
           params.append("classificacao_clinica", classificationValue);
         } else if (intervention.type === "Intervenção de processo") {
@@ -152,9 +158,12 @@ export default function App() {
           interventions: [{ type: "", specialty: "", classifications: [], acceptance: "", is_economic: "", cost_classification: "" }]
         });
         setTimeout(() => setSuccess(false), 3000);
+      } else {
+        setError("Erro ao salvar registro no banco de dados.");
       }
     } catch (error) {
       console.error("Error saving record:", error);
+      setError("Erro de conexão. Verifique sua internet.");
     } finally {
       setLoading(false);
     }
@@ -243,7 +252,14 @@ export default function App() {
             {success && (
               <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl flex items-center gap-3 animate-in fade-in zoom-in duration-300">
                 <CheckCircle2 className="w-5 h-5" />
-                <span className="font-medium">Registro salvo com sucesso!</span>
+                <span className="font-medium">REGISTRO ENVIADO</span>
+              </div>
+            )}
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3 animate-in fade-in zoom-in duration-300">
+                <AlertCircle className="w-5 h-5" />
+                <span className="font-medium">{error}</span>
               </div>
             )}
 
