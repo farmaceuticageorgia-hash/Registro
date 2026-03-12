@@ -146,7 +146,21 @@ export default function App() {
         params.append("setor", formData.sector);
         params.append("leito", formData.bed_number);
         params.append("tipo_intervencao", intervention.type);
-        params.append("classificacao", intervention.classifications.join(", ") || "Nenhuma");
+        
+        // Se houver classificações de processo/clínica, envia em 'classificacao'
+        // Se for econômica, envia a classificação de custo em 'classificacao_economia'
+        const mainClassifications = intervention.classifications.join(", ");
+        if (mainClassifications) {
+          params.append("classificacao", mainClassifications);
+        }
+        if (intervention.is_economic === "Sim" && intervention.cost_classification) {
+          params.append("classificacao_economia", intervention.cost_classification);
+        }
+        // Se ambos estiverem vazios, o script vai acabar pegando vazio ou podemos mandar um padrão
+        if (!mainClassifications && !(intervention.is_economic === "Sim" && intervention.cost_classification)) {
+          params.append("classificacao", "Nenhuma");
+        }
+
         params.append("aceitacao_medica", intervention.acceptance);
         params.append("economica", intervention.is_economic);
         params.append("especialidade", intervention.specialty);
