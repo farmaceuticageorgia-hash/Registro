@@ -1,0 +1,5 @@
+{
+  "name": "Registro de Intervenções Farmacêuticas",
+  "description": "Sistema para registro e análise de intervenções farmacêuticas clínicas em ambiente hospitalar.",
+  "requestFramePermissions": []
+}
