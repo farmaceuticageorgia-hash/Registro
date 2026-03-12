@@ -47,6 +47,8 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
   const [success, setSuccess] = useState(false);
+  const [supportSuccess, setSupportSuccess] = useState(false);
+  const [supportError, setSupportError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<PatientRecord>({
     date: new Date().toISOString().split('T')[0],
@@ -146,6 +148,34 @@ export default function App() {
       }
     } catch (error) {
       console.error("Error saving record:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSupportSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setSupportError(null);
+    
+    const form = e.currentTarget;
+    const data = new FormData(form);
+    
+    try {
+      // Using fetch with no-cors for Google Apps Script to avoid CORS issues
+      // while still sending the data.
+      await fetch(form.action, {
+        method: "POST",
+        body: data,
+        mode: "no-cors"
+      });
+      
+      setSupportSuccess(true);
+      form.reset();
+      setTimeout(() => setSupportSuccess(false), 5000);
+    } catch (error) {
+      setSupportError("Erro ao enviar mensagem. Por favor, tente novamente.");
+      console.error("Support submission error:", error);
     } finally {
       setLoading(false);
     }
@@ -598,9 +628,23 @@ export default function App() {
             </div>
 
             <div className="card p-8 max-w-2xl mx-auto">
+              {supportSuccess && (
+                <div className="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl flex items-center gap-3 animate-in fade-in zoom-in duration-300">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span className="font-medium">Mensagem enviada com sucesso!</span>
+                </div>
+              )}
+
+              {supportError && (
+                <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3 animate-in fade-in zoom-in duration-300">
+                  <AlertCircle className="w-5 h-5" />
+                  <span className="font-medium">{supportError}</span>
+                </div>
+              )}
+
               <form 
                 action="https://script.google.com/macros/s/AKfycbyGBMcpM_H6YBTCHKTx9FXp9H3IjSra4hmoZLsNhbTR34V7rNBG19zxHJ6pu2ORazPa/exec" 
-                method="POST"
+                onSubmit={handleSupportSubmit}
                 className="space-y-6"
               >
                 <div className="space-y-2">
@@ -635,8 +679,16 @@ export default function App() {
                   ></textarea>
                 </div>
                 
-                <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">
-                  <Send className="w-5 h-5" />
+                <button 
+                  type="submit" 
+                  disabled={loading}
+                  className="btn-primary w-full flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <Send className="w-5 h-5" />
+                  )}
                   Enviar Dados
                 </button>
               </form>
