@@ -130,11 +130,35 @@ export default function App() {
     e.preventDefault();
     setLoading(true);
     try {
+      // 1. Save to local SQLite database
       const res = await fetch("/api/records", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
       });
+
+      // 2. Send to Google Sheets (Integration)
+      const googleScriptUrl = "https://script.google.com/macros/s/AKfycbyGBMcpM_H6YBTCHKTx9FXp9H3IjSra4hmoZLsNhbTR34V7rNBG19zxHJ6pu2ORazPa/exec";
+      
+      // Envia uma requisição para cada intervenção para que cada uma seja uma linha na planilha
+      formData.interventions.forEach(intervention => {
+        const googleFormData = new FormData();
+        googleFormData.append("farmaceutico", formData.pharmacist_name);
+        googleFormData.append("setor", formData.sector);
+        googleFormData.append("leito", formData.bed_number);
+        googleFormData.append("tipo_intervencao", intervention.type);
+        googleFormData.append("classificacao", intervention.classifications.join(", ") || "Nenhuma");
+        googleFormData.append("aceitacao", intervention.acceptance);
+        googleFormData.append("economica", intervention.is_economic);
+        googleFormData.append("especialidade", intervention.specialty);
+
+        fetch(googleScriptUrl, {
+          method: "POST",
+          body: googleFormData,
+          mode: "no-cors"
+        }).catch(err => console.error("Erro ao enviar para Google Sheets:", err));
+      });
+
       if (res.ok) {
         setSuccess(true);
         setFormData({
