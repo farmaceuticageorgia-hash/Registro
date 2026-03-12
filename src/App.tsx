@@ -41,6 +41,7 @@ import {
 import { PatientRecord, Intervention, Stats } from "./types";
 
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"];
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyGBMcpM_H6YBTCHKTx9FXp9H3IjSra4hmoZLsNhbTR34V7rNBG19zxHJ6pu2ORazPa/exec";
 
 export default function App() {
   const [view, setView] = useState<"form" | "dashboard" | "support">("form");
@@ -138,8 +139,6 @@ export default function App() {
       });
 
       // 2. Send to Google Sheets (Integration)
-      const googleScriptUrl = "https://script.google.com/macros/s/AKfycbyGBMcpM_H6YBTCHKTx9FXp9H3IjSra4hmoZLsNhbTR34V7rNBG19zxHJ6pu2ORazPa/exec";
-      
       // Envia uma requisição para cada intervenção para que cada uma seja uma linha na planilha
       formData.interventions.forEach(intervention => {
         const googleFormData = new FormData();
@@ -152,7 +151,7 @@ export default function App() {
         googleFormData.append("economica", intervention.is_economic);
         googleFormData.append("especialidade", intervention.specialty);
 
-        fetch(googleScriptUrl, {
+        fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
           body: googleFormData,
           mode: "no-cors"
@@ -188,7 +187,7 @@ export default function App() {
     try {
       // Using fetch with no-cors for Google Apps Script to avoid CORS issues
       // while still sending the data.
-      await fetch(form.action, {
+      await fetch(GOOGLE_SCRIPT_URL, {
         method: "POST",
         body: data,
         mode: "no-cors"
@@ -667,7 +666,7 @@ export default function App() {
               )}
 
               <form 
-                action="https://script.google.com/macros/s/AKfycbyGBMcpM_H6YBTCHKTx9FXp9H3IjSra4hmoZLsNhbTR34V7rNBG19zxHJ6pu2ORazPa/exec" 
+                action={GOOGLE_SCRIPT_URL} 
                 onSubmit={handleSupportSubmit}
                 className="space-y-6"
               >
