@@ -41,7 +41,7 @@ import {
 import { PatientRecord, Intervention, Stats } from "./types";
 
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"];
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyGBMcpM_H6YBTCHKTx9FXp9H3IjSra4hmoZLsNhbTR34V7rNBG19zxHJ6pu2ORazPa/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwfKgfLP-Z-zInGg-XYUnarcGGcWSVQzVW0u51cinx8YAABuKOJEXOFYXMM_-9xR0t6/exec";
 
 export default function App() {
   const [view, setView] = useState<"form" | "dashboard" | "support">("form");
