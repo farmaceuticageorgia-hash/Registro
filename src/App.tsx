@@ -143,9 +143,8 @@ export default function App() {
       formData.interventions.forEach(intervention => {
         const params = new URLSearchParams();
         params.append("farmaceutico", formData.pharmacist_name);
-        params.append("setor", formData.sector);
-        params.append("leito", formData.bed_number);
-        params.append("tipo", intervention.type);
+        params.append("setor_leito", `${formData.sector} - ${formData.bed_number}`);
+        params.append("tipo_intervencao", intervention.type);
         params.append("classificacao", intervention.classifications.join(", ") || "Nenhuma");
         params.append("aceitacao", intervention.acceptance);
         params.append("economica", intervention.is_economic);
