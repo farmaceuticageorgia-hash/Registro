@@ -146,7 +146,7 @@ export default function App() {
         params.append("setor_leito", `${formData.sector} - ${formData.bed_number}`);
         params.append("tipo_intervencao", intervention.type);
         params.append("classificacao", intervention.classifications.join(", ") || "Nenhuma");
-        params.append("aceitacao", intervention.acceptance);
+        params.append("aceitacao_medica", intervention.acceptance);
         params.append("economica", intervention.is_economic);
         params.append("especialidade", intervention.specialty);
 
