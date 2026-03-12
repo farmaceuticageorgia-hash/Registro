@@ -92,26 +92,22 @@ export default function App() {
     setFormData({ ...formData, interventions: newInterventions });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    try {
-      // 1. Save to local SQLite database
-      const res = await fetch("/api/records", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-      });
+    setSuccess(false);
 
-      // 2. Send to Google Sheets (Integration)
+    const form = e.currentTarget;
+
+    try {
+      // Send to Google Sheets (Integration)
       // Envia uma requisição para cada intervenção para que cada uma seja uma linha na planilha
-      formData.interventions.forEach(intervention => {
-        const params = new URLSearchParams();
-        params.append("farmaceutico", formData.pharmacist_name);
-        params.append("setor", formData.sector);
-        params.append("leito", formData.bed_number);
-        params.append("tipo_intervencao", intervention.type);
+      for (const intervention of formData.interventions) {
+        const data = new FormData(form);
+        
+        // Add intervention specific data
+        data.append("tipo_intervencao", intervention.type);
         
         // Coluna F: Clínica ou Processo
         let classificationValue = intervention.classifications[0] || "Não preenchido";
@@ -120,47 +116,41 @@ export default function App() {
         }
 
         if (intervention.type === "Intervenção clínica") {
-          params.append("classificacao_clinica", classificationValue);
+          data.append("classificacao_clinica", classificationValue);
         } else if (intervention.type === "Intervenção de processo") {
-          params.append("classificacao_processo", classificationValue);
+          data.append("classificacao_processo", classificationValue);
         } else {
-          params.append("classificacao", classificationValue);
+          data.append("classificacao", classificationValue);
         }
         
         // Coluna I: Classificação de custo (E.01, E.02...)
         if (intervention.is_economic === "Sim" && intervention.cost_classification) {
-          params.append("classificacao_qualitativa_de_economia", intervention.cost_classification);
+          data.append("classificacao_qualitativa_de_economia", intervention.cost_classification);
         } else {
-          params.append("classificacao_qualitativa_de_economia", "");
+          data.append("classificacao_qualitativa_de_economia", "");
         }
 
-        params.append("aceitacao_medica", intervention.acceptance);
-        params.append("potencial_economico", intervention.is_economic);
-        params.append("especialidade", intervention.specialty);
+        data.append("aceitacao_medica", intervention.acceptance);
+        data.append("potencial_economico", intervention.is_economic);
+        data.append("especialidade", intervention.specialty);
 
-        fetch(GOOGLE_SCRIPT_URL, {
+        // Using fetch with no-cors for Google Apps Script to avoid CORS issues
+        await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
-          body: params.toString(),
-          mode: "no-cors",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-          }
-        }).catch(err => console.error("Erro ao enviar para Google Sheets:", err));
-      });
-
-      if (res.ok) {
-        setSuccess(true);
-        setFormData({
-          date: new Date().toISOString().split('T')[0],
-          pharmacist_name: "",
-          sector: "",
-          bed_number: "",
-          interventions: [{ type: "", specialty: "", classifications: [], acceptance: "", is_economic: "", cost_classification: "" }]
+          body: data,
+          mode: "no-cors"
         });
-        setTimeout(() => setSuccess(false), 3000);
-      } else {
-        setError("Erro ao salvar registro no banco de dados.");
       }
+
+      setSuccess(true);
+      setFormData({
+        date: new Date().toISOString().split('T')[0],
+        pharmacist_name: "",
+        sector: "",
+        bed_number: "",
+        interventions: [{ type: "", specialty: "", classifications: [], acceptance: "", is_economic: "", cost_classification: "" }]
+      });
+      setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
       console.error("Error saving record:", error);
       setError("Erro de conexão. Verifique sua internet.");
@@ -277,6 +267,7 @@ export default function App() {
                     <input
                       required
                       type="date"
+                      name="data"
                       className="input-field"
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
@@ -288,6 +279,7 @@ export default function App() {
                     <input
                       required
                       type="text"
+                      name="farmaceutico"
                       className="input-field"
                       placeholder="Ex: João Silva"
                       value={formData.pharmacist_name}
@@ -299,6 +291,7 @@ export default function App() {
                     <label className="text-sm font-medium text-zinc-700">Setor</label>
                     <select
                       required
+                      name="setor"
                       className="input-field"
                       value={formData.sector}
                       onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
@@ -313,6 +306,7 @@ export default function App() {
                     <input
                       required
                       type="text"
+                      name="leito"
                       className="input-field"
                       placeholder="Ex: 102-A"
                       value={formData.bed_number}
