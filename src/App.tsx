@@ -41,7 +41,7 @@ import {
 import { PatientRecord, Intervention, Stats } from "./types";
 
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"];
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwfKgfLP-Z-zInGg-XYUnarcGGcWSVQzVW0u51cinx8YAABuKOJEXOFYXMM_-9xR0t6/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXsr5uULq6Z9ivAlJe3Ecj_BKuhwqPI_5OzG0DrYwk93QpxlHfqRBsWStNRsoe6rJM/exec";
 
 export default function App() {
   const [view, setView] = useState<"form" | "dashboard" | "support">("form");
@@ -143,7 +143,8 @@ export default function App() {
       formData.interventions.forEach(intervention => {
         const params = new URLSearchParams();
         params.append("farmaceutico", formData.pharmacist_name);
-        params.append("setor_leito", `${formData.sector} - ${formData.bed_number}`);
+        params.append("setor", formData.sector);
+        params.append("leito", formData.bed_number);
         params.append("tipo_intervencao", intervention.type);
         params.append("classificacao", intervention.classifications.join(", ") || "Nenhuma");
         params.append("aceitacao_medica", intervention.acceptance);
