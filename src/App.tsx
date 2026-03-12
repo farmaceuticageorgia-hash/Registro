@@ -111,9 +111,15 @@ export default function App() {
         params.append("leito", formData.bed_number);
         params.append("tipo_intervencao", intervention.type);
         
-        // Coluna F: Classificações de processo/clínica
-        const mainClassifications = intervention.classifications.join(", ");
-        params.append("classificacao", mainClassifications || "Não preenchido");
+        // Coluna F: Clínica ou Processo
+        const classificationValue = intervention.classifications[0] || "Não preenchido";
+        if (intervention.type === "Intervenção clínica") {
+          params.append("classificacao_clinica", classificationValue);
+        } else if (intervention.type === "Intervenção de processo") {
+          params.append("classificacao_processo", classificationValue);
+        } else {
+          params.append("classificacao", classificationValue);
+        }
         
         // Coluna I: Classificação de custo (E.01, E.02...)
         if (intervention.is_economic === "Sim" && intervention.cost_classification) {

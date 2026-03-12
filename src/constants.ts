@@ -66,6 +66,5 @@ export const COST_CLASSIFICATIONS = [
   "Redução de custos por mudança de via EV para VO",
   "Suspensão de medicamento sem necessidade",
   "Economia por substituição terapêutica",
-  "Economia por redução de tempo de tratamento",
-  "Não aplicável"
+  "Economia por redução de tempo de tratamento"
 ];
