@@ -2,6 +2,10 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import Database from "better-sqlite3";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const db = new Database("interventions.db");
 
@@ -43,6 +47,7 @@ async function startServer() {
 
   // API Routes
   app.post("/api/records", (req, res) => {
+    console.log("POST /api/records received", req.body);
     const { date, pharmacist_name, sector, bed_number, interventions } = req.body;
     
     try {
