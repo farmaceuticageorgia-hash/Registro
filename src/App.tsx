@@ -141,20 +141,23 @@ export default function App() {
       // 2. Send to Google Sheets (Integration)
       // Envia uma requisição para cada intervenção para que cada uma seja uma linha na planilha
       formData.interventions.forEach(intervention => {
-        const googleFormData = new FormData();
-        googleFormData.append("farmaceutico", formData.pharmacist_name);
-        googleFormData.append("setor", formData.sector);
-        googleFormData.append("leito", formData.bed_number);
-        googleFormData.append("tipo_intervencao", intervention.type);
-        googleFormData.append("classificacao", intervention.classifications.join(", ") || "Nenhuma");
-        googleFormData.append("aceitacao", intervention.acceptance);
-        googleFormData.append("economica", intervention.is_economic);
-        googleFormData.append("especialidade", intervention.specialty);
+        const params = new URLSearchParams();
+        params.append("farmaceutico", formData.pharmacist_name);
+        params.append("setor", formData.sector);
+        params.append("leito", formData.bed_number);
+        params.append("tipo", intervention.type);
+        params.append("classificacao", intervention.classifications.join(", ") || "Nenhuma");
+        params.append("aceitacao", intervention.acceptance);
+        params.append("economica", intervention.is_economic);
+        params.append("especialidade", intervention.specialty);
 
         fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
-          body: googleFormData,
-          mode: "no-cors"
+          body: params.toString(),
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          }
         }).catch(err => console.error("Erro ao enviar para Google Sheets:", err));
       });
 
@@ -182,15 +185,22 @@ export default function App() {
     setSupportError(null);
     
     const form = e.currentTarget;
-    const data = new FormData(form);
+    const formDataObj = new FormData(form);
+    const params = new URLSearchParams();
+    formDataObj.forEach((value, key) => {
+      params.append(key, value.toString());
+    });
     
     try {
       // Using fetch with no-cors for Google Apps Script to avoid CORS issues
       // while still sending the data.
       await fetch(GOOGLE_SCRIPT_URL, {
         method: "POST",
-        body: data,
-        mode: "no-cors"
+        body: params.toString(),
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
       });
       
       setSupportSuccess(true);
