@@ -147,22 +147,19 @@ export default function App() {
         params.append("leito", formData.bed_number);
         params.append("tipo_intervencao", intervention.type);
         
-        // Se houver classificações de processo/clínica, envia em 'classificacao'
-        // Se for econômica, envia a classificação de custo em 'classificacao_qualitativa_de_economia'
+        // Coluna F: Classificações de processo/clínica
         const mainClassifications = intervention.classifications.join(", ");
-        if (mainClassifications) {
-          params.append("classificacao", mainClassifications);
-        }
+        params.append("classificacao", mainClassifications || "Não preenchido");
+        
+        // Coluna I: Classificação de custo (E.01, E.02...)
         if (intervention.is_economic === "Sim" && intervention.cost_classification) {
           params.append("classificacao_qualitativa_de_economia", intervention.cost_classification);
-        }
-        // Se ambos estiverem vazios, o script vai acabar pegando "Não preenchido"
-        if (!mainClassifications && !(intervention.is_economic === "Sim" && intervention.cost_classification)) {
-          params.append("classificacao", "Não preenchido");
+        } else {
+          params.append("classificacao_qualitativa_de_economia", "");
         }
 
         params.append("aceitacao_medica", intervention.acceptance);
-        params.append("intervencao_potencialmente_economica", intervention.is_economic);
+        params.append("potencial_economico", intervention.is_economic);
         params.append("especialidade", intervention.specialty);
 
         fetch(GOOGLE_SCRIPT_URL, {
