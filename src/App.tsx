@@ -148,21 +148,21 @@ export default function App() {
         params.append("tipo_intervencao", intervention.type);
         
         // Se houver classificações de processo/clínica, envia em 'classificacao'
-        // Se for econômica, envia a classificação de custo em 'classificacao_economia'
+        // Se for econômica, envia a classificação de custo em 'classificacao_qualitativa_de_economia'
         const mainClassifications = intervention.classifications.join(", ");
         if (mainClassifications) {
           params.append("classificacao", mainClassifications);
         }
         if (intervention.is_economic === "Sim" && intervention.cost_classification) {
-          params.append("classificacao_economia", intervention.cost_classification);
+          params.append("classificacao_qualitativa_de_economia", intervention.cost_classification);
         }
-        // Se ambos estiverem vazios, o script vai acabar pegando vazio ou podemos mandar um padrão
+        // Se ambos estiverem vazios, o script vai acabar pegando "Não preenchido"
         if (!mainClassifications && !(intervention.is_economic === "Sim" && intervention.cost_classification)) {
-          params.append("classificacao", "Nenhuma");
+          params.append("classificacao", "Não preenchido");
         }
 
         params.append("aceitacao_medica", intervention.acceptance);
-        params.append("economica", intervention.is_economic);
+        params.append("intervencao_potencialmente_economica", intervention.is_economic);
         params.append("especialidade", intervention.specialty);
 
         fetch(GOOGLE_SCRIPT_URL, {
