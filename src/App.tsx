@@ -12,7 +12,9 @@ import {
   AlertCircle,
   TrendingUp,
   Activity,
-  Trash2
+  Trash2,
+  MessageSquare,
+  Send
 } from "lucide-react";
 import { 
   BarChart, 
@@ -41,7 +43,7 @@ import { PatientRecord, Intervention, Stats } from "./types";
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"];
 
 export default function App() {
-  const [view, setView] = useState<"form" | "dashboard">("form");
+  const [view, setView] = useState<"form" | "dashboard" | "support">("form");
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
   const [success, setSuccess] = useState(false);
@@ -181,6 +183,16 @@ export default function App() {
             >
               <BarChart3 className="w-4 h-4" />
               Dashboard
+            </button>
+            <button
+              onClick={() => setView("support")}
+              className={cn(
+                "px-4 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2",
+                view === "support" ? "bg-white text-emerald-700 shadow-sm" : "text-zinc-500 hover:text-zinc-700"
+              )}
+            >
+              <MessageSquare className="w-4 h-4" />
+              Suporte
             </button>
           </nav>
         </div>
@@ -461,7 +473,7 @@ export default function App() {
               </div>
             </form>
           </div>
-        ) : (
+        ) : view === "dashboard" ? (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col gap-1">
               <h2 className="text-2xl font-bold text-zinc-900">Análise de Resultados</h2>
@@ -577,6 +589,58 @@ export default function App() {
                 <p className="text-zinc-500 font-medium">Carregando estatísticas...</p>
               </div>
             )}
+          </div>
+        ) : (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex flex-col gap-1">
+              <h2 className="text-2xl font-bold text-zinc-900">Suporte e Feedback</h2>
+              <p className="text-zinc-500">Envie suas dúvidas ou sugestões diretamente para nossa equipe.</p>
+            </div>
+
+            <div className="card p-8 max-w-2xl mx-auto">
+              <form 
+                action="https://script.google.com/macros/s/AKfycbyGBMcpM_H6YBTCHKTx9FXp9H3IjSra4hmoZLsNhbTR34V7rNBG19zxHJ6pu2ORazPa/exec" 
+                method="POST"
+                className="space-y-6"
+              >
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-700">Seu Nome</label>
+                  <input 
+                    type="text" 
+                    name="nome" 
+                    placeholder="Como podemos te chamar?" 
+                    required 
+                    className="input-field"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-700">Seu Email</label>
+                  <input 
+                    type="email" 
+                    name="email" 
+                    placeholder="seu@email.com" 
+                    required 
+                    className="input-field"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-700">Sua Mensagem</label>
+                  <textarea 
+                    name="mensagem" 
+                    placeholder="Descreva sua dúvida, sugestão ou problema..." 
+                    rows={5}
+                    className="input-field resize-none"
+                  ></textarea>
+                </div>
+                
+                <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">
+                  <Send className="w-5 h-5" />
+                  Enviar Dados
+                </button>
+              </form>
+            </div>
           </div>
         )}
       </main>
