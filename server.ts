@@ -46,6 +46,10 @@ async function startServer() {
   const PORT = 3000;
 
   // API Routes
+  app.get("/api/test", (req, res) => {
+    res.status(200).json({ message: "API funcionando!" });
+  });
+
   app.post("/api/records", (req, res) => {
     console.log("POST /api/records received", req.body);
     const { date, pharmacist_name, sector, bed_number, interventions } = req.body;
