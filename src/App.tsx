@@ -2,32 +2,15 @@ import React, { useState, useEffect } from "react";
 import { 
   Plus, 
   Save, 
-  BarChart3, 
   ClipboardList, 
   User, 
-  MapPin, 
   Stethoscope, 
-  ChevronRight,
   CheckCircle2,
   AlertCircle,
-  TrendingUp,
-  Activity,
   Trash2,
   MessageSquare,
   Send
 } from "lucide-react";
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  PieChart, 
-  Pie, 
-  Cell 
-} from "recharts";
 import { cn } from "./utils";
 import { 
   SECTORS, 
@@ -38,15 +21,13 @@ import {
   ACCEPTANCE_OPTIONS, 
   COST_CLASSIFICATIONS 
 } from "./constants";
-import { PatientRecord, Intervention, Stats } from "./types";
+import { PatientRecord, Intervention } from "./types";
 
-const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"];
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXsr5uULq6Z9ivAlJe3Ecj_BKuhwqPI_5OzG0DrYwk93QpxlHfqRBsWStNRsoe6rJM/exec";
 
 export default function App() {
-  const [view, setView] = useState<"form" | "dashboard" | "support">("form");
+  const [view, setView] = useState<"form" | "support">("form");
   const [loading, setLoading] = useState(false);
-  const [stats, setStats] = useState<Stats | null>(null);
   const [success, setSuccess] = useState(false);
   const [supportSuccess, setSupportSuccess] = useState(false);
   const [supportError, setSupportError] = useState<string | null>(null);
@@ -62,20 +43,8 @@ export default function App() {
   });
 
   useEffect(() => {
-    if (view === "dashboard") {
-      fetchStats();
-    }
-  }, [view]);
-
-  const fetchStats = async () => {
-    try {
-      const res = await fetch("/api/stats");
-      const data = await res.json();
-      setStats(data);
-    } catch (error) {
-      console.error("Error fetching stats:", error);
-    }
-  };
+    // Initialization if needed
+  }, []);
 
   const handleAddIntervention = () => {
     if (formData.interventions.length < 5) {
@@ -116,14 +85,9 @@ export default function App() {
     setFormData({ ...formData, interventions: newInterventions });
   };
 
-  const toggleClassification = (index: number, classification: string) => {
+  const handleClassificationSelect = (index: number, classification: string) => {
     const newInterventions = [...formData.interventions];
-    const current = newInterventions[index].classifications;
-    if (current.includes(classification)) {
-      newInterventions[index].classifications = current.filter(c => c !== classification);
-    } else {
-      newInterventions[index].classifications = [...current, classification];
-    }
+    newInterventions[index].classifications = [classification];
     setFormData({ ...formData, interventions: newInterventions });
   };
 
@@ -247,16 +211,6 @@ export default function App() {
             >
               <Plus className="w-4 h-4" />
               Novo Registro
-            </button>
-            <button
-              onClick={() => setView("dashboard")}
-              className={cn(
-                "px-4 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2",
-                view === "dashboard" ? "bg-white text-emerald-700 shadow-sm" : "text-zinc-500 hover:text-zinc-700"
-              )}
-            >
-              <BarChart3 className="w-4 h-4" />
-              Dashboard
             </button>
             <button
               onClick={() => setView("support")}
@@ -389,7 +343,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Classificações - Checkbox Group */}
+                    {/* Classificações - Single Select Group */}
                     {intervention.type && intervention.type !== "Não houve intervenção" && (
                       <div className="space-y-4 p-4 bg-zinc-50 rounded-2xl border border-zinc-100 animate-in fade-in zoom-in duration-300">
                         <label className="text-sm font-bold text-zinc-800 uppercase tracking-wider">
@@ -397,26 +351,28 @@ export default function App() {
                         </label>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                           {(intervention.type === "Intervenção de processo" ? PROCESS_CLASSIFICATIONS : CLINICAL_CLASSIFICATIONS).map(c => (
-                            <label
+                            <button
                               key={c}
+                              type="button"
+                              onClick={() => handleClassificationSelect(index, c)}
                               className={cn(
-                                "flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all border",
+                                "flex items-start text-left gap-3 p-3 rounded-lg cursor-pointer transition-all border",
                                 intervention.classifications.includes(c)
                                   ? "bg-white border-emerald-200 shadow-sm"
                                   : "border-transparent hover:bg-white/50"
                               )}
                             >
-                              <input
-                                type="checkbox"
-                                className="mt-1 w-4 h-4 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500"
-                                checked={intervention.classifications.includes(c)}
-                                onChange={() => toggleClassification(index, c)}
-                              />
+                              <div className={cn(
+                                "mt-1 w-4 h-4 rounded-full border flex items-center justify-center shrink-0",
+                                intervention.classifications.includes(c) ? "border-emerald-600 bg-emerald-600" : "border-zinc-300"
+                              )}>
+                                {intervention.classifications.includes(c) && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                              </div>
                               <span className={cn(
                                 "text-sm leading-tight",
                                 intervention.classifications.includes(c) ? "text-emerald-900 font-medium" : "text-zinc-600"
                               )}>{c}</span>
-                            </label>
+                            </button>
                           ))}
                         </div>
                       </div>
@@ -470,21 +426,7 @@ export default function App() {
                           </div>
                         </div>
 
-                        {/* Especialidade Médica - Per Intervention */}
-                        <div className="space-y-2 md:col-span-2">
-                          <label className="text-sm font-bold text-zinc-800 uppercase tracking-wider">Especialidade Médica Responsável</label>
-                          <select
-                            required
-                            className="input-field"
-                            value={intervention.specialty}
-                            onChange={(e) => handleInterventionChange(index, "specialty", e.target.value)}
-                          >
-                            <option value="">Selecione a especialidade</option>
-                            {SPECIALTIES.map(s => <option key={s} value={s}>{s}</option>)}
-                          </select>
-                        </div>
-
-                        {/* Cost Classification - Conditional */}
+                        {/* Cost Classification - Conditional - MOVED HERE */}
                         {intervention.is_economic === "Sim" && (
                           <div className="space-y-3 md:col-span-2 animate-in fade-in zoom-in duration-300">
                             <label className="text-sm font-bold text-zinc-800 uppercase tracking-wider">Classificação Qualitativa de Economia</label>
@@ -499,6 +441,20 @@ export default function App() {
                             </select>
                           </div>
                         )}
+
+                        {/* Especialidade Médica - Per Intervention */}
+                        <div className="space-y-2 md:col-span-2">
+                          <label className="text-sm font-bold text-zinc-800 uppercase tracking-wider">Especialidade Médica Responsável</label>
+                          <select
+                            required
+                            className="input-field"
+                            value={intervention.specialty}
+                            onChange={(e) => handleInterventionChange(index, "specialty", e.target.value)}
+                          >
+                            <option value="">Selecione a especialidade</option>
+                            {SPECIALTIES.map(s => <option key={s} value={s}>{s}</option>)}
+                          </select>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -546,123 +502,6 @@ export default function App() {
                 </div>
               </div>
             </form>
-          </div>
-        ) : view === "dashboard" ? (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex flex-col gap-1">
-              <h2 className="text-2xl font-bold text-zinc-900">Análise de Resultados</h2>
-              <p className="text-zinc-500">Visão geral das intervenções e impacto clínico.</p>
-            </div>
-
-            {stats ? (
-              <>
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="card p-6 flex flex-col gap-2">
-                    <span className="text-zinc-500 text-sm font-medium">Total de Pacientes</span>
-                    <div className="flex items-end justify-between">
-                      <span className="text-3xl font-bold">{stats.totalRecords}</span>
-                      <div className="p-2 bg-emerald-50 rounded-lg">
-                        <User className="w-5 h-5 text-emerald-600" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="card p-6 flex flex-col gap-2">
-                    <span className="text-zinc-500 text-sm font-medium">Total Intervenções</span>
-                    <div className="flex items-end justify-between">
-                      <span className="text-3xl font-bold">{stats.totalInterventions}</span>
-                      <div className="p-2 bg-blue-50 rounded-lg">
-                        <Activity className="w-5 h-5 text-blue-600" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="card p-6 flex flex-col gap-2">
-                    <span className="text-zinc-500 text-sm font-medium">Taxa de Aceitação</span>
-                    <div className="flex items-end justify-between">
-                      <span className="text-3xl font-bold">
-                        {stats.totalInterventions > 0 
-                          ? Math.round((stats.byAcceptance.find(a => a.acceptance === "Aceita")?.count || 0) / stats.totalInterventions * 100)
-                          : 0}%
-                      </span>
-                      <div className="p-2 bg-amber-50 rounded-lg">
-                        <TrendingUp className="w-5 h-5 text-amber-600" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Charts */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="card p-6 space-y-4">
-                    <h3 className="font-semibold text-zinc-900">Intervenções por Tipo</h3>
-                    <div className="h-64">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={stats.byType}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={60}
-                            outerRadius={80}
-                            paddingAngle={5}
-                            dataKey="count"
-                            nameKey="type"
-                          >
-                            {stats.byType.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <div className="flex flex-wrap gap-4 justify-center">
-                      {stats.byType.map((entry, index) => (
-                        <div key={entry.type} className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                          <span className="text-xs text-zinc-600">{entry.type}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="card p-6 space-y-4">
-                    <h3 className="font-semibold text-zinc-900">Intervenções por Setor</h3>
-                    <div className="h-64">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={stats.bySector}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f4f4f5" />
-                          <XAxis dataKey="sector" fontSize={12} tickLine={false} axisLine={false} />
-                          <YAxis fontSize={12} tickLine={false} axisLine={false} />
-                          <Tooltip cursor={{ fill: '#f8fafc' }} />
-                          <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-
-                  <div className="card p-6 space-y-4 lg:col-span-2">
-                    <h3 className="font-semibold text-zinc-900">Aceitação Médica</h3>
-                    <div className="h-64">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart layout="vertical" data={stats.byAcceptance}>
-                          <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f4f4f5" />
-                          <XAxis type="number" fontSize={12} tickLine={false} axisLine={false} />
-                          <YAxis dataKey="acceptance" type="category" fontSize={12} tickLine={false} axisLine={false} width={120} />
-                          <Tooltip cursor={{ fill: '#f8fafc' }} />
-                          <Bar dataKey="count" fill="#3b82f6" radius={[0, 4, 4, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <div className="w-12 h-12 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin" />
-                <p className="text-zinc-500 font-medium">Carregando estatísticas...</p>
-              </div>
-            )}
           </div>
         ) : (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">

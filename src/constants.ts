@@ -56,8 +56,7 @@ export const CLINICAL_CLASSIFICATIONS = [
 export const ACCEPTANCE_OPTIONS = [
   "Aceita",
   "Parcialmente aceita",
-  "Não aceita",
-  "Não aplicável"
+  "Não aceita"
 ];
 
 export const COST_CLASSIFICATIONS = [
